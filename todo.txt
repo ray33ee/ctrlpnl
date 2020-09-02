@@ -1,0 +1,7 @@
+
+
+ - Get colour dictionary from script function calls, then send this to the device lets say the script has two functions,
+   "func1", "func2" and "func3". When "func1" is called, it returns { "func1": "red", "func2": "green" }. This will be
+   sent to the device, which will change the indicator colours for func1, func2, and leave func3 unchanged
+ - In the "add_script" command, parse the script file to get the script name, function names, and function titles
+   for each button, then send this to device (device must add this data to its device_config.json file)

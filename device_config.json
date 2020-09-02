@@ -1,0 +1,45 @@
+{
+  "pages":
+  [
+    {
+      "scripts": ["volume_script"],
+      "buttons": [
+        {
+          "script": "volume_script",
+          "function": "mute",
+          "name": "Mute"
+        },
+        {
+          "script": "volume_script",
+          "function": "volume_up",
+          "name": "Volume Up"
+        },
+        {
+          "script": "volume_script",
+          "function": "volume_down",
+          "name": "Volume Down"
+        },
+        {},
+        {
+          "script": "volume_script",
+          "function": "mute_bass",
+          "name": "Mute bass"
+        },
+        {
+          "script": "volume_script",
+          "function": "bass_up",
+          "name": "Bass up"
+        },
+        {
+          "script": "volume_script",
+          "function": "bass_down",
+          "name": "Bass down"
+        },
+        {}
+
+
+      ],
+      "dials": ["", "", "", ""]
+    }
+  ]
+}
