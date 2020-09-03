@@ -12,7 +12,7 @@ scripts_dir = "./scripts/"
 
 root = tk.Tk()
 
-pnl = CtrlPnl("COM4")
+pnl = CtrlPnl("COM3")
 
 app = CtrlPnlFrame(pnl, master=root)
 
@@ -22,14 +22,6 @@ with open("device_config.json", "r") as infile:
     config = json.load(infile)
 
 print(json.dumps(config))
-
-module = __import__("volume_script")
-
-test_script = getattr(module, "Script")
-
-thing = test_script()
-
-print(thing.dictionary())
 
 script_dictionary = {}
 
@@ -52,6 +44,10 @@ def loadPage(index):
             app.widget_list[i].enabled(False)
 
     pnl.load_scripts(scripts)
+
+    colour_response = pnl.read()
+
+    app.colours(json.loads(colour_response["data"].decode('UTF-8')))
 
 loadPage(0)
 
@@ -81,6 +77,8 @@ while True:
         elif command_string == "dial_changed":
             pass
         elif command_string == "add_page":
+            pass
+        elif command_string == "update_color":
             pass
 
         print(command_string)

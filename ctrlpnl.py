@@ -176,14 +176,9 @@ class PanelButton(tk.Frame):
         self.button["state"] = "normal" if isEnabled == True else "disable"
 
     def send_function(self):
-        colours = self.ctrl.send_function(self.script_name, self.function_name)
-
-        for key in colours.keys():
-            for widget in self.master.master.widget_list:
-                if key == widget.function_name:
-                    widget.background(colours[key])
-
-        print(self.master.master.widget_list)
+        cols = self.ctrl.send_function(self.script_name, self.function_name)
+        print("Cols: " + str(cols))
+        self.master.master.colours(cols)
 
     def set_function(self, script, function):
         self.script_name = script
@@ -216,3 +211,8 @@ class CtrlPnlFrame(tk.Frame):
 
         self.widget_list = self.row1.widget_list + self.row2.widget_list
 
+    def colours(self, colours):
+        for key in colours.keys():
+            for widget in self.widget_list:
+                if key == widget.function_name:
+                    widget.background(colours[key])

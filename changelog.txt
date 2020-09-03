@@ -1,2 +1,10 @@
+Version 1.0.1
+    - Initial opening of script removed from device.py (device.py should not load any modules itself, the host should do this exclusively)
+    - We now have a 'colours' member in scripts which stores the initial colours of all the used button indicators
+    - CtrlPnlFrams now has colours function which fascilitates the setting of button indicator colours
+    - When we call load script, we now get the initial colours from the host
+    - Added colours in our test script, volume_script.py
+    - Writes for bass and preamp are performed in one function, solving Permission denied bug
+
 Version 1.0.0
 	- Initial commit
