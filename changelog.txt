@@ -1,3 +1,13 @@
+Version 1.0.2
+    - Add page navigation to device code
+    - Main loop code (originally in device.py) moved to CtrlPnlFrame class update() method
+    - Added GUI to host application
+    - Added send, add and remove page commands to device code
+    - data argument is now optional in CtrlPnl.write
+    - Script functions that do not return colours will not throw exceptions
+    - Button indicator colouring  issue fixed (data for buttons was not being cleared properly)
+    - Added script for multimedia keys
+
 Version 1.0.1
     - Initial opening of script removed from device.py (device.py should not load any modules itself, the host should do this exclusively)
     - We now have a 'colours' member in scripts which stores the initial colours of all the used button indicators

@@ -18,6 +18,9 @@ class Script:
 
         self.colours = self.write()
 
+    def __del__(self):
+        print("DESTROYED!!1!")
+
 
     def dictionary(self):
         return {

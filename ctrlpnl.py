@@ -25,7 +25,9 @@ COMMANDS = [
     "add_page",
     "send_function",
     "load_scripts",
-    "update_color"
+    "update_color",
+    "send_page",
+    "remove_page"
 ]
 
 RESPONSES = ["ack", "nack", "bad hash", "bad magic values"]
@@ -78,7 +80,7 @@ class CtrlPnl:
     def inBufferSize(self):
         return self.serial.in_waiting
 
-    def write(self, command, data):
+    def write(self, command, data=b''):
         # Send data
         send(self.serial, COMMANDS.index(command), data)
 
@@ -185,6 +187,13 @@ class PanelButton(tk.Frame):
         self.function_name = function
         self.button["command"] = self.send_function
 
+    def clear(self):
+        self.text("")
+        self.button["command"] = None
+        self.background("white")
+        self.script_name = ""
+        self.function_name = ""
+
 
 class PanelRow(tk.Frame):
     def __init__(self, widget, ctrlpnl, master=None):
@@ -198,21 +207,187 @@ class PanelRow(tk.Frame):
             self.widget_list[i].pack(side="left")
 
 
+class PageNavigator(tk.Frame):
+    def __init__(self, master=None):
+        super(PageNavigator, self).__init__(master)
+
+        self.pack(fill="x")
+
+        self.left_button = tk.Button(self)
+        self.left_button.pack(side="left")
+
+        self.right_button = tk.Button(self)
+        self.right_button.pack(side="right")
+
+        self.title = tk.Label(self)
+        self.title.pack()
+
+
 class CtrlPnlFrame(tk.Frame):
 
-    def __init__(self, ctrlpnl, master=None):
+    def __init__(self, port, config_path, master=None):
         super(CtrlPnlFrame, self).__init__(master)
 
         self.master = master
         self.pack()
 
-        self.row1 = PanelRow(PanelButton, ctrlpnl, self)
-        self.row2 = PanelRow(PanelButton, ctrlpnl, self)
+        self.pnl = CtrlPnl(port)
+
+        self.row1 = PanelRow(PanelButton, self.pnl, self)
+        self.row2 = PanelRow(PanelButton, self.pnl, self)
+
+        self.navigator = PageNavigator(self)
+        self.navigator.pack(side="bottom")
+
+        self.navigator.left_button["command"] = self.previous
+        self.navigator.right_button["command"] = self.next
 
         self.widget_list = self.row1.widget_list + self.row2.widget_list
 
+        self.script_dictionary = {}
+
+        self.config = {}
+
+        self.page_index = 0
+
+        self.scripts_dir = "./scripts/"
+
+        with open("device_config.json", "r") as infile:
+            self.config = json.load(infile)
+
+        print(json.dumps(self.config))
+
+        self.loadPage()
+
+    def next(self):
+        self.page_index += 1
+
+        if self.page_index == len(self.config["pages"]):
+            self.page_index = len(self.config["pages"]) - 1
+
+        print(self.page_index)
+
+        self.loadPage()
+
+    def previous(self):
+        self.page_index -= 1
+
+        if self.page_index == -1:
+            self.page_index = 0
+
+        self.loadPage()
+
+    def update(self):
+        super(CtrlPnlFrame, self).update()
+
+        if self.pnl.inBufferSize() != 0:
+            response = self.pnl.read()
+            command_string = COMMANDS[response["identifier"]]
+            data = response["data"]
+
+            if command_string == "open":
+                pass
+            elif command_string == "add_script":
+                length = int.from_bytes(data[0:4], byteorder=BYTE_ORDER)
+                title = data[4:length + 4].decode(encoding='UTF-8')
+                script = data[length + 4:]
+                with open(title, "wb") as fp:
+                    fp.write(script)
+            elif command_string == "assign_script":
+                pass
+            elif command_string == "button_pressed":
+                pass
+            elif command_string == "dial_changed":
+                pass
+            elif command_string == "add_page":
+                entry = {
+                    "title": "",
+                    "scripts": [],
+                    "buttons": [
+                        {},
+                        {},
+                        {},
+                        {},
+                        {},
+                        {},
+                        {},
+                        {}
+                    ],
+                    "dials": ["", "", "", ""]
+                }
+
+                self.config["pages"].insert(self.page_index + 1, entry)
+
+                with open("device_config.json", "w") as outfile:
+                    json.dump(self.config, outfile, indent=4)
+            elif command_string == "send_page":
+                page = json.loads(data.decode('UTF-8'))
+
+                self.config["pages"][self.page_index] = page
+
+                with open("device_config.json", "w") as outfile:
+                    json.dump(self.config, outfile, indent=4)
+
+                self.loadPage()
+
+            elif command_string == "update_color":
+                pass
+            elif command_string == "remove_page":
+                self.config["pages"].pop(self.page_index)
+
+                with open("device_config.json", "w") as outfile:
+                    json.dump(self.config, outfile, indent=4)
+
+                if self.page_index == len(self.config["pages"]):
+                    self.page_index = len(self.config["pages"])-1
+
+                self.loadPage()
+
+            print("command: " + command_string)
+            print(response)
+
+
+    def clear(self):
+        for widget in self.widget_list:
+            widget.clear()
+
+    def loadPage(self):
+        page = self.config["pages"][self.page_index]
+        scripts = page["scripts"]
+        buttons = page["buttons"]
+
+        self.clear()
+
+        self.navigator.title["text"] = page["title"]
+
+        self.script_dictionary.clear()
+
+        print("Scripts: " + str(scripts))
+
+        for i in range(8):
+            if len(buttons[i]) != 0:
+                print("Nth Script: " + buttons[i]["script"])
+                print("Nth Function: " + buttons[i]["function"])
+                self.widget_list[i].text(buttons[i]["name"])
+                self.widget_list[i].set_function(buttons[i]["script"], buttons[i]["function"])
+                self.widget_list[i].enabled(True)
+            else:
+                self.widget_list[i].enabled(False)
+                self.widget_list[i].text("")
+
+        if len(scripts) != 0:
+            self.pnl.load_scripts(scripts)
+
+            for _ in scripts:
+                colour_response = self.pnl.read()
+
+                print("COlours: " + str(colour_response))
+
+                self.colours(json.loads(colour_response["data"].decode('UTF-8')))
+
     def colours(self, colours):
-        for key in colours.keys():
-            for widget in self.widget_list:
-                if key == widget.function_name:
-                    widget.background(colours[key])
+        if colours:
+            for key in colours.keys():
+                for widget in self.widget_list:
+                    if key == widget.function_name:
+                        widget.background(colours[key])

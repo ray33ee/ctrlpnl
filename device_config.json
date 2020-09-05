@@ -1,45 +1,105 @@
 {
-  "pages":
-  [
-    {
-      "scripts": ["volume_script"],
-      "buttons": [
+    "pages": [
         {
-          "script": "volume_script",
-          "function": "mute",
-          "name": "Mute"
+            "title": "Volume",
+            "scripts": [
+                "volume_script",
+                "multimedia_script"
+            ],
+            "buttons": [
+                {
+                    "script": "volume_script",
+                    "function": "mute",
+                    "name": "Mute"
+                },
+                {
+                    "script": "volume_script",
+                    "function": "volume_up",
+                    "name": "Volume Up"
+                },
+                {
+                    "script": "volume_script",
+                    "function": "volume_down",
+                    "name": "Volume Down"
+                },
+                {
+                },
+                {
+                    "script": "volume_script",
+                    "function": "mute_bass",
+                    "name": "Mute bass"
+                },
+                {
+                    "script": "volume_script",
+                    "function": "bass_up",
+                    "name": "Bass up"
+                },
+                {
+                    "script": "volume_script",
+                    "function": "bass_down",
+                    "name": "Bass down"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "pause",
+                    "name": "Pause"
+                }
+            ],
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
         },
         {
-          "script": "volume_script",
-          "function": "volume_up",
-          "name": "Volume Up"
-        },
-        {
-          "script": "volume_script",
-          "function": "volume_down",
-          "name": "Volume Down"
-        },
-        {},
-        {
-          "script": "volume_script",
-          "function": "mute_bass",
-          "name": "Mute bass"
-        },
-        {
-          "script": "volume_script",
-          "function": "bass_up",
-          "name": "Bass up"
-        },
-        {
-          "script": "volume_script",
-          "function": "bass_down",
-          "name": "Bass down"
-        },
-        {}
+            "title": "",
+            "scripts": ["multimedia_script"],
+            "buttons": [
+                {
+                    "script": "multimedia_script",
+                    "function": "pause",
+                    "name": "Pause"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "stop",
+                    "name": "Stop"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "mute",
+                    "name": "Mute"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "up",
+                    "name": "Volume Up"
 
-
-      ],
-      "dials": ["", "", "", ""]
-    }
-  ]
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "down",
+                    "name": "Volume Down"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "next",
+                    "name": "Next Track"
+                },
+                {
+                    "script": "multimedia_script",
+                    "function": "previous",
+                    "name": "Previous Track"
+                },
+                {}
+            ],
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        }
+    ]
 }

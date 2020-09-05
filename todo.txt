@@ -5,3 +5,7 @@
    sent to the device, which will change the indicator colours for func1, func2, and leave func3 unchanged
  - In the "add_script" command, parse the script file to get the script name, function names, and function titles
    for each button, then send this to device (device must add this data to its device_config.json file)
+ - Think about who initiates communication, host or device. Take into account scenarios where host is loaded first then device,
+   and visa versa.
+ - Think about how the host decides which com port to use
+ - Make sure active script destructors are called (by calling script_dictionary.clear() ) when host application exits
