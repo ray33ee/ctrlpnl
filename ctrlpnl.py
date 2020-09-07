@@ -4,6 +4,7 @@
 import serial
 import hashlib
 import tkinter as tk
+from tkinter import ttk
 import json
 import os
 
@@ -27,7 +28,10 @@ COMMANDS = [
     "load_scripts",
     "update_color",
     "send_page",
-    "remove_page"
+    "remove_page",
+    "next_page",
+    "previous_page",
+    "get_page"
 ]
 
 RESPONSES = ["ack", "nack", "bad hash", "bad magic values"]
@@ -195,15 +199,51 @@ class PanelButton(tk.Frame):
         self.function_name = ""
 
 
+
+
+class PanelCombos(tk.Frame):
+    def __init__(self, scripts_and_functions, master=None):
+        super(PanelCombos, self).__init__(master)
+        self.master = master
+        self.pack()
+
+        self.script = ttk.Combobox(self)
+        self.script.pack(side="top")
+        self.script["state"] = "readonly"
+
+        self.function = ttk.Combobox(self)
+        self.function.pack(side="top")
+        self.function["state"] = "readonly"
+
+        self.scripts_and_functions = scripts_and_functions
+
+        self.script.bind("<<ComboboxSelected>>", self.selected_handler)
+
+    def set_script(self, script, function):
+        self.script.current(list(self.scripts_and_functions.keys()).index(script))
+        self.function["values"] = self.scripts_and_functions[script]["functions"]
+        self.function.current(self.scripts_and_functions[script]["functions"].index(function))
+
+    def selected_handler(self, event):
+        self.function["values"] = self.scripts_and_functions[self.script.get()]["functions"]
+        self.function.current(0)
+
+
+
+
+
 class PanelRow(tk.Frame):
-    def __init__(self, widget, ctrlpnl, master=None):
+    def __init__(self, widget, ctrlpnl=None, s_and_f=None, master=None):
         super(PanelRow, self).__init__(master)
 
         self.widget_list = []
         self.pack()
 
         for i in range(4):
-            self.widget_list.append(widget(ctrlpnl, self))
+            if not ctrlpnl:
+                self.widget_list.append(widget(s_and_f, self))
+            else:
+                self.widget_list.append(widget(ctrlpnl, self))
             self.widget_list[i].pack(side="left")
 
 
@@ -223,6 +263,8 @@ class PageNavigator(tk.Frame):
         self.title.pack()
 
 
+
+
 class CtrlPnlFrame(tk.Frame):
 
     def __init__(self, port, config_path, master=None):
@@ -233,8 +275,8 @@ class CtrlPnlFrame(tk.Frame):
 
         self.pnl = CtrlPnl(port)
 
-        self.row1 = PanelRow(PanelButton, self.pnl, self)
-        self.row2 = PanelRow(PanelButton, self.pnl, self)
+        self.row1 = PanelRow(PanelButton, self.pnl, None, self)
+        self.row2 = PanelRow(PanelButton, self.pnl, None, self)
 
         self.navigator = PageNavigator(self)
         self.navigator.pack(side="bottom")
@@ -259,6 +301,8 @@ class CtrlPnlFrame(tk.Frame):
 
         self.loadPage()
 
+        self.get_page()
+
     def next(self):
         self.page_index += 1
 
@@ -269,6 +313,8 @@ class CtrlPnlFrame(tk.Frame):
 
         self.loadPage()
 
+        self.get_page()
+
     def previous(self):
         self.page_index -= 1
 
@@ -276,6 +322,11 @@ class CtrlPnlFrame(tk.Frame):
             self.page_index = 0
 
         self.loadPage()
+
+        self.get_page()
+
+    def get_page(self):
+        self.pnl.write("get_page", json.dumps(self.config["pages"][self.page_index]).encode('UTF-8'))
 
     def update(self):
         super(CtrlPnlFrame, self).update()
@@ -342,6 +393,12 @@ class CtrlPnlFrame(tk.Frame):
                     self.page_index = len(self.config["pages"])-1
 
                 self.loadPage()
+            elif command_string == "next_page":
+                self.next()
+            elif command_string == "previous_page":
+                self.previous()
+            elif command_string == "get_page":
+                self.get_page()
 
             print("command: " + command_string)
             print(response)
@@ -353,8 +410,12 @@ class CtrlPnlFrame(tk.Frame):
 
     def loadPage(self):
         page = self.config["pages"][self.page_index]
-        scripts = page["scripts"]
+        scripts = set()
         buttons = page["buttons"]
+
+        for button in buttons:
+            if len(button) != 0:
+                scripts.add(button["script"])
 
         self.clear()
 

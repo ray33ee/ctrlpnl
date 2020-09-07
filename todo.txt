@@ -9,3 +9,5 @@
    and visa versa.
  - Think about how the host decides which com port to use
  - Make sure active script destructors are called (by calling script_dictionary.clear() ) when host application exits
+ - Find out why row1 and row2 are around the wrong way in host gui code
+ - Make sure when we delete a page, that the combo boxes update accordingly

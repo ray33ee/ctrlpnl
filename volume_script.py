@@ -21,6 +21,11 @@ class Script:
     def __del__(self):
         print("DESTROYED!!1!")
 
+    def functions():
+        return ["mute", "volume_up", "volume_down", "mute_bass", "bass_up", "bass_down"]
+
+    def names():
+        return ["Mute", "Volume Up", "Volume Down", "Mute Bass", "Bass Up", "Bass Down"]
 
     def dictionary(self):
         return {

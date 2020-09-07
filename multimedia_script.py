@@ -19,6 +19,12 @@ class Script:
     def __del__(self):
         print("DESTROYED!!1!")
 
+    def functions():
+        return ["pause", "stop", "mute", "up", "down", "next", "previous"]
+
+    def names():
+        return ["Pause", "Stop", "Mute", "Volume Up", "Volume Down", "Next", "Previous"]
+
     def dictionary(self):
         return {
             "name": "Multimedia keys",
