@@ -48,7 +48,7 @@
             ]
         },
         {
-            "title": "",
+            "title": "Multimedia",
             "buttons": [
                 {
                     "script": "multimedia_script",
@@ -66,9 +66,9 @@
                     "name": "Next"
                 },
                 {
-                    "script": "multimedia_script",
-                    "function": "mute",
-                    "name": "Mute"
+                    "script": "volume_script",
+                    "function": "volume_up",
+                    "name": "Volume Up"
                 },
                 {
                     "script": "multimedia_script",
@@ -85,6 +85,30 @@
                     "function": "previous",
                     "name": "Previous"
                 },
+                {
+                    "script": "volume_script",
+                    "function": "mute_bass",
+                    "name": "Mute Bass"
+                }
+            ],
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        },
+        {
+            "title": "",
+            "scripts": [],
+            "buttons": [
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
                 {}
             ],
             "dials": [

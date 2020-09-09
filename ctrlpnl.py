@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 import json
 import os
+from gpiozero import Button
 
 BYTE_ORDER = 'big'
 
@@ -197,6 +198,10 @@ class PanelButton(tk.Frame):
         self.background("white")
         self.script_name = ""
         self.function_name = ""
+        
+    def click(self):
+        if self.button["state"] == "normal":
+            self.send_function()
 
 
 
@@ -302,6 +307,18 @@ class CtrlPnlFrame(tk.Frame):
         self.loadPage()
 
         self.get_page()
+        
+        self.pins = ["J8:11", "J8:13"]
+        
+        self.hardware_buttons = []
+        
+        self.prev_button_state = []
+        
+        for i in range(len(self.pins)):
+            self.hardware_buttons.append(Button(self.pins[i]))
+            self.prev_button_state.append(False)
+            #self.hardware_buttons[i].when_pressed = self.widget_list[i].click
+        
 
     def next(self):
         self.page_index += 1
@@ -330,6 +347,13 @@ class CtrlPnlFrame(tk.Frame):
 
     def update(self):
         super(CtrlPnlFrame, self).update()
+        
+        for i in range(len(self.hardware_buttons)):
+            if self.prev_button_state[i] == False and self.hardware_buttons[i].is_pressed == True:
+                self.widget_list[i].click()
+            self.prev_button_state[i] = self.hardware_buttons[i].is_pressed
+            
+        
 
         if self.pnl.inBufferSize() != 0:
             response = self.pnl.read()

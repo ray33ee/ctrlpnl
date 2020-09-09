@@ -110,8 +110,6 @@ label1.pack(side="top")
 
 row1 = PanelRow(PanelCombos, None, app)
 row1.pack(side="top")
-tester = tk.Button(row1)
-tester.pack(side="top")
 
 
 label2 = tk.Label(app)
