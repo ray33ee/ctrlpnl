@@ -1,25 +1,46 @@
 from time import sleep
 
+import os
+import pickle
+
+SAVED_SETTINGS_FILENAME = "volume.p"
+
 class Script:
     def __init__(self):
+        print("Volume Created")
         self.equaliser_config_path = "C:\Program Files\EqualizerAPO\config\config.txt"
 
         self.preamp_colours = ['#E8F8F5', '#D1F2EB', '#A3E4D7', '#76D7C4', '#48C9B0', '#1ABC9C', '#17A589', '#148F77', '#117864', '#0E6251', '#0A463A']
         self.bass_colours = ['#F4ECF7', '#E8DAEF', '#D2B4DE', '#BB8FCE', '#A569BD', '#8E44AD', '#7D3C98', '#6C3483', '#5B2C6F', '#4A235A', '#2F1739']
 
         self.bass_gain_values = [-40, -20, -10, -8, -4, -2, -1, 0, 1, 2, 4]
-        self.current_bass_gain = self.bass_gain_values.index(0)
 
         self.preamp_gain_values = [-40, -20, -10, -8, -4, -2, -1, 0, 1, 2, 4]
-        self.current_preamp_gain = self.preamp_gain_values.index(0)
 
-        self.preamp_ismuted = False
-        self.bass_ismuted = False
+        self.current_preamp_gain = None
+        self.current_bass_gain = None
+
+        self.preamp_ismuted = None
+        self.bass_ismuted = None
+
+        if os.path.exists(os.path.join(os.getcwd(), SAVED_SETTINGS_FILENAME)):
+            with open(os.path.join(os.getcwd(), SAVED_SETTINGS_FILENAME), "rb") as fp:
+                self.current_preamp_gain, self.preamp_ismuted, self.current_bass_gain, self.bass_ismuted = pickle.loads(fp.read())
+        else:
+            self.current_preamp_gain = self.preamp_gain_values.index(0)
+            self.current_bass_gain = self.bass_gain_values.index(0)
+
+            self.preamp_ismuted = False
+            self.bass_ismuted = False
+
 
         self.colours = self.write()
 
     def __del__(self):
-        print("DESTROYED!!1!")
+        print("Volume Destroyed")
+        with open(os.path.join(os.getcwd(), SAVED_SETTINGS_FILENAME), "wb") as fp:
+            fp.write(pickle.dumps([self.current_preamp_gain, self.preamp_ismuted, self.current_bass_gain, self.bass_ismuted]))
+
 
     def functions():
         return ["mute", "volume_up", "volume_down", "mute_bass", "bass_up", "bass_down"]

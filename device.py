@@ -1,4 +1,4 @@
-from ctrlpnl import CtrlPnl, COMMANDS, BYTE_ORDER
+from ctrlpnl import CtrlPnlComs, COMMANDS, BYTE_ORDER
 
 import tkinter as tk
 import serial
@@ -56,7 +56,7 @@ class PanelButton(tk.Frame):
     def send_function(self):
         cols = self.ctrl.send_function(self.script_name, self.function_name)
         print("Cols: " + str(cols))
-        self.master.colours(cols)
+        self.master.colours(cols, self.script_name)
 
     def set_function(self, script, function):
         self.script_name = script
@@ -75,15 +75,15 @@ class PanelButton(tk.Frame):
             self.send_function()
 
 
-class CtrlPnlFrame(tk.Frame):
+class CtrlPnlDeviceFrame(tk.Frame):
 
     def __init__(self, port, config_path, master=None):
-        super(CtrlPnlFrame, self).__init__(master)
+        super(CtrlPnlDeviceFrame, self).__init__(master)
 
         self.master = master
         self.pack(fill=tk.BOTH, expand=1)
 
-        self.pnl = CtrlPnl(port)
+        self.pnl = CtrlPnlComs(port)
 
         self.widget_list = []
 
@@ -181,7 +181,7 @@ class CtrlPnlFrame(tk.Frame):
         self.pnl.write("get_page", json.dumps(self.config["pages"][self.page_index]).encode('UTF-8'))
 
     def update(self):
-        super(CtrlPnlFrame, self).update()
+        super(CtrlPnlDeviceFrame, self).update()
 
         for i in range(len(self.hardware_buttons)):
             if self.prev_button_state[i] == False and self.hardware_buttons[i].is_pressed == True:
@@ -250,10 +250,6 @@ class CtrlPnlFrame(tk.Frame):
                 with open("device_config.json", "w") as outfile:
                     json.dump(self.config, outfile, indent=4)
 
-                if self.page_index == len(self.config["pages"]):
-                    self.page_index = len(self.config["pages"]) - 1
-
-                self.loadPage()
             elif command_string == "next_page":
                 self.next()
             elif command_string == "previous_page":
@@ -299,27 +295,29 @@ class CtrlPnlFrame(tk.Frame):
         if len(scripts) != 0:
             self.pnl.load_scripts(scripts)
 
-            for _ in scripts:
+            for script in scripts:
                 colour_response = self.pnl.read()
 
                 print("COlours: " + str(colour_response))
 
-                self.colours(json.loads(colour_response["data"].decode('UTF-8')))
 
-    def colours(self, colours):
+                self.colours(json.loads(colour_response["data"].decode('UTF-8')), script)
+
+
+    def colours(self, colours, script_name):
         if colours:
             for key in colours.keys():
                 for widget in self.widget_list:
-                    if key == widget.function_name:
+                    if key == widget.function_name and script_name == widget.script_name:
                         widget.background(colours[key])
 
 
 # Make sure host and device do not send commands at the same time
 
 root = tk.Tk()
-root.attributes('-fullscreen', True)
+#root.attributes('-fullscreen', True)
 
-app = CtrlPnlFrame("COM3", "device_config.json", master=root)
+app = CtrlPnlDeviceFrame("/dev/ttyS0", "device_config.json", master=root)
 
 
 while True:

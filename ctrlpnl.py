@@ -91,7 +91,7 @@ class Page:
         pass
 
 
-class CtrlPnl:
+class CtrlPnlComs:
     def __init__(self, port, baud=DEFAULT_BAUD):
         self.serial = serial.Serial(port, baud)
 

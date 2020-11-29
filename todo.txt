@@ -3,18 +3,11 @@
  - Think about who initiates communication, host or device. Take into account scenarios where host is loaded first then device,
    and visa versa.
  - Think about how the host decides which com port to use
- - Make sure active script destructors are called (by calling script_dictionary.clear() ) when host application exits
- - Find out why row1 and row2 are around the wrong way in host gui code
- - Make sure when we delete a page, that the combo boxes update accordingly
- - Despaghettify code and add host.py gui code to its own class.
-    - Clean up the way we pass arguments to PanelRow
-    - Rename CtrlPnl class to CtrlPnlDevice class
-    - Add CtrlPnlHost class and put host gui code there
-    - Add comments to unclear code
- - Make sure to reload scripts and buttons when we call send_page (indicator colours should reset too) make sure that
+ - Add comments to unclear code
  - Reorganise:
     - Remove PanelRow class, and use grid instead.
-    - Add GUI code in host and device to CtrlPnlHostFrame and CtrlPnlDeviceFrame, respectively
- - Find out why the mute function responds to the colours from the multimedia and volume scripts
- - Add startup and closing routines to remember last volume setting in volume script
  - Figure out how to send host application to system tray on startup
+ - Remove loops (such as those waiting for a response from serial port) from within main GUI loop
+    - When waiting for response via serial, implement a timeout
+ - Implement dial code. Only call dial functions when the dial value has changed enough (i.e. the difference between this value and the previous is greater than some value epsilon)
+ - When the host code exits, send a signal for the device code to stop too

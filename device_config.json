@@ -18,7 +18,11 @@
                     "function": "volume_down",
                     "name": "Volume Down"
                 },
-                {},
+                {
+                    "script": "multimedia_script",
+                    "function": "mute",
+                    "name": "Mute"
+                },
                 {
                     "script": "volume_script",
                     "function": "mute_bass",
@@ -100,10 +104,17 @@
         },
         {
             "title": "",
-            "scripts": [],
             "buttons": [
-                {},
-                {},
+                {
+                    "script": "multimedia_script",
+                    "function": "pause",
+                    "name": "Pause"
+                },
+                {
+                    "script": "volume_script",
+                    "function": "mute_bass",
+                    "name": "Mute Bass"
+                },
                 {},
                 {},
                 {},

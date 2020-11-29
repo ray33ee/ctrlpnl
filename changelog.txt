@@ -1,3 +1,12 @@
+Version 1.0.6
+    - Host code now deletes old script instances BEFORE new ones are instantiated
+    - volume_script now remembers settings on script startup/exit
+    - Host GUI code is now encapsulated in CtrlPnlHostFrame
+    - CtrlPnl and CtrlPnlFrame have been renamed to CtrlPnlComs and CtrlPnlDeviceFrame, respectively
+    - Adding and deleting pages will now upate on both host and device GUIs
+    - row1 and row2 are now displayed in the correct order in Host GUI
+    - Buttons indicators will now only change colour if the script name matches as well as the function name
+
 Version 1.0.5
 	- Device gui now starts maximised and buttons now stretch to fit screen
 	- send_value added to device and host code for dial support

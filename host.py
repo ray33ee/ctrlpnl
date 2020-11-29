@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ctrlpnl import CtrlPnl, COMMANDS, BYTE_ORDER
+from ctrlpnl import CtrlPnlComs, COMMANDS, BYTE_ORDER
 import json
 import tkinter as tk
 import os
@@ -50,170 +50,173 @@ class PanelRow(tk.Frame):
             self.widget_list[i].pack(side="left")
 
 
+class CtrlPnlHostFrame(tk.Frame):
 
-def new_page_command():
-    pnl.write("add_page")
+    def __init__(self, master=None):
+        super(CtrlPnlHostFrame, self).__init__(master)
+
+        self.master = master
+
+        self.buttons = tk.Frame(master)
+        self.buttons.pack()
+
+        self.new_page = tk.Button(self.buttons)
+        self.new_page["text"] = "new page"
+        self.new_page.pack(side="left")
+        self.new_page["command"] = self.new_page_command
+
+        self.remove_page = tk.Button(self.buttons)
+        self.remove_page["text"] = "remove page"
+        self.remove_page.pack(side="left")
+        self.remove_page["command"] = self.remove_page_command
+
+        self.send_page = tk.Button(self.buttons)
+        self.send_page["text"] = "send page"
+        self.send_page.pack(side="left")
+        self.send_page["command"] = self.send_page_command
+
+        self.next_page = tk.Button(self.buttons)
+        self.next_page["text"] = "next page"
+        self.next_page.pack(side="left")
+        self.next_page["command"] = self.next_page_command
+
+        self.previous_page = tk.Button(self.buttons)
+        self.previous_page["text"] = "previous page"
+        self.previous_page.pack(side="left")
+        self.previous_page["command"] = self.previous_page_command
+
+        self.get_page = tk.Button(self.buttons)
+        self.get_page["text"] = "get page"
+        self.get_page.pack(side="left")
+        self.get_page["command"] = self.get_page_command
+
+        self.page_name = tk.Entry(master)
+        self.page_name.pack(side="top")
+
+        self.label1 = tk.Label(master)
+        self.label1["text"] = ""
+        self.label1.pack(side="top")
+
+        self.row1 = PanelRow(PanelCombos, None, master)
+        self.row1.pack(side="top")
+
+        self.label2 = tk.Label(master)
+        self.label2["text"] = ""
+        self.label2.pack(side="top")
+
+        self.scripts_and_functions = {}
+
+        self.row2 = PanelRow(PanelCombos, None, self.scripts_and_functions, master)
+        self.row2.pack(side="top")
+
+        self.combos = [*self.row1.widget_list, *self.row2.widget_list]
+
+        i = 0
+        for combo in self.combos:
+            combo.script.set(str(i))
+            i += 1
+
+    def new_page_command(self):
+        pnl.write("add_page")
+        pnl.write("next_page")
 
 
-def remove_page_command():
-    print("iojoijoij")
-    pnl.write("remove_page", b'')
-    load_combos()
+    def remove_page_command(self):
+        print("iojoijoij")
+        pnl.write("remove_page", b'')
+        self.load_combos()
+        pnl.write("previous_page")
 
-def next_page_command():
-    pnl.write("next_page")
-
-
-def previous_page_command():
-    pnl.write("previous_page")
+    def next_page_command(self):
+        pnl.write("next_page")
 
 
-def get_page_command():
-    pnl.write("get_page")
+    def previous_page_command(self):
+        pnl.write("previous_page")
 
-def send_page_command():
 
-    buttons = []
+    def get_page_command(self):
+        pnl.write("get_page")
 
-    for combo in combos:
-        button = {}
-        if combo.script.get() != "":
-            button["script"] = combo.script.get()
-            button["function"] = combo.function.get()
-            index = scripts_and_functions[combo.script.get()]["functions"].index(combo.function.get())
-            button["name"] = scripts_and_functions[combo.script.get()]["names"][index]
+    def send_page_command(self):
 
-        buttons.append(button)
+        buttons = []
 
-    print(buttons)
+        for combo in self.combos:
+            button = {}
+            if combo.script.get() != "":
+                button["script"] = combo.script.get()
+                button["function"] = combo.function.get()
+                index = self.scripts_and_functions[combo.script.get()]["functions"].index(combo.function.get())
+                button["name"] = self.scripts_and_functions[combo.script.get()]["names"][index]
 
-    page = {
-        "title": page_name.get(),
-        "buttons": buttons,
-        "dials": [
-            "",
-            "",
-            "",
-            ""
-        ]
-    }
+            buttons.append(button)
 
-    pnl.write("send_page", json.dumps(page).encode('UTF-8'))
+        print(buttons)
 
+        page = {
+            "title": self.page_name.get(),
+            "buttons": buttons,
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        }
+
+        pnl.write("send_page", json.dumps(page).encode('UTF-8'))
+
+    def load_names(self):
+        self.scripts_and_functions = {
+            "":
+                {
+                    "functions": [""],
+                    "names": [""]
+                }
+        }
+        ls = os.listdir(os.getcwd())
+        for dir in ls:
+            if dir[-10:] == "_script.py":
+                script_name = dir[:-3]
+                module = __import__(script_name)
+                functions = getattr(module, "Script").functions()
+                names = getattr(module, "Script").names()
+                self.scripts_and_functions[script_name] = {"functions": functions, "names": names}
+
+        for combo in self.combos:
+            combo.scripts_and_functions = self.scripts_and_functions
+        print(self.scripts_and_functions)
+
+    def load_combos(self):
+        page = json.loads(data.decode('UTF-8'))
+
+        index = 0
+        self.page_name.delete(0, tk.END)
+        self.page_name.insert(0, page["title"])
+        for button in page["buttons"]:
+            self.combos[index].script["values"] = list(self.scripts_and_functions.keys())
+
+            if len(button) != 0:
+                self.combos[index].set_script(button["script"], button["function"])
+            else:
+                self.combos[index].set_script("", "")
+
+            index += 1
 
 
 port = 'COM3'
 
-pnl = CtrlPnl(port)
+pnl = CtrlPnlComs(port)
 
 script_dictionary = {}
 
-
 root = tk.Tk()
 
-app = tk.Frame(root)
+app = CtrlPnlHostFrame(root)
 app.pack()
 
-buttons = tk.Frame(app)
-buttons.pack()
-
-new_page = tk.Button(buttons)
-new_page["text"] = "new page"
-new_page.pack(side="left")
-new_page["command"] = new_page_command
-
-remove_page = tk.Button(buttons)
-remove_page["text"] = "remove page"
-remove_page.pack(side="left")
-remove_page["command"] = remove_page_command
-
-send_page = tk.Button(buttons)
-send_page["text"] = "send page"
-send_page.pack(side="left")
-send_page["command"] = send_page_command
-
-next_page = tk.Button(buttons)
-next_page["text"] = "next page"
-next_page.pack(side="left")
-next_page["command"] = next_page_command
-
-previous_page = tk.Button(buttons)
-previous_page["text"] = "previous page"
-previous_page.pack(side="left")
-previous_page["command"] = previous_page_command
-
-get_page = tk.Button(buttons)
-get_page["text"] = "get page"
-get_page.pack(side="left")
-get_page["command"] = get_page_command
-
-page_name = tk.Entry(app)
-page_name.pack(side="top")
-
-label1 = tk.Label(app)
-label1["text"] = ""
-label1.pack(side="top")
-
-row1 = PanelRow(PanelCombos, None, app)
-row1.pack(side="top")
-
-
-label2 = tk.Label(app)
-label2["text"] = ""
-label2.pack(side="top")
-
-scripts_and_functions = {}
-
-row2 = PanelRow(PanelCombos, None, scripts_and_functions, app)
-row2.pack(side="top")
-
-combos = [*row2.widget_list, *row1.widget_list]
-
-i = 0
-for combo in combos:
-    combo.script.set(str(i))
-    i +=1
-
-def load_names():
-    global scripts_and_functions
-
-    scripts_and_functions = {
-        "":
-         {
-             "functions": [""],
-             "names": [""]
-         }
-    }
-    ls = os.listdir(os.path.dirname(__file__))
-    for dir in ls:
-        if dir[-10:] == "_script.py":
-            script_name = dir[:-3]
-            module = __import__(script_name)
-            functions = getattr(module, "Script").functions()
-            names = getattr(module, "Script").names()
-            scripts_and_functions[script_name] = { "functions": functions, "names": names }
-
-    for combo in combos:
-        combo.scripts_and_functions = scripts_and_functions
-    print(scripts_and_functions)
-
-def load_combos():
-    page = json.loads(data.decode('UTF-8'))
-
-    index = 0
-    page_name.delete(0, tk.END)
-    page_name.insert(0, page["title"])
-    for button in page["buttons"]:
-        combos[index].script["values"] = list(scripts_and_functions.keys())
-
-        if len(button) != 0:
-            combos[index].set_script(button["script"], button["function"])
-        else:
-            combos[index].set_script("", "")
-
-        index += 1
-
-load_names()
+app.load_names()
 
 while True:
     app.update_idletasks()
@@ -260,6 +263,8 @@ while True:
                 script = data[ptr+4:ptr+length+4].decode('UTF-8')
 
                 module = __import__(script)
+                # The following line is needed to ensure that the old instance is destroyed BEFORE the new instance is created
+                script_dictionary[script] = None
                 script_dictionary[script] = getattr(module, "Script")()
 
                 # Setup initial colours
@@ -269,4 +274,4 @@ while True:
                 ptr += 4+length
 
         elif command_string == "get_page":
-            load_combos()
+           app.load_combos()
