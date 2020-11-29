@@ -1,9 +1,55 @@
 from datetime import datetime
 
-from ctrlpnl import CtrlPnl, COMMANDS, BYTE_ORDER, PanelRow, PanelCombos
+from ctrlpnl import CtrlPnl, COMMANDS, BYTE_ORDER
 import json
 import tkinter as tk
 import os
+from tkinter import ttk
+
+
+class PanelCombos(tk.Frame):
+    def __init__(self, scripts_and_functions, master=None):
+        super(PanelCombos, self).__init__(master)
+        self.master = master
+        self.pack()
+
+        self.script = ttk.Combobox(self)
+        self.script.pack(side="top")
+        self.script["state"] = "readonly"
+
+        self.function = ttk.Combobox(self)
+        self.function.pack(side="top")
+        self.function["state"] = "readonly"
+
+        self.scripts_and_functions = scripts_and_functions
+
+        self.script.bind("<<ComboboxSelected>>", self.selected_handler)
+
+    def set_script(self, script, function):
+        self.script.current(list(self.scripts_and_functions.keys()).index(script))
+        self.function["values"] = self.scripts_and_functions[script]["functions"]
+        self.function.current(self.scripts_and_functions[script]["functions"].index(function))
+
+    def selected_handler(self, event):
+        self.function["values"] = self.scripts_and_functions[self.script.get()]["functions"]
+        self.function.current(0)
+
+
+class PanelRow(tk.Frame):
+    def __init__(self, widget, ctrlpnl=None, s_and_f=None, master=None):
+        super(PanelRow, self).__init__(master)
+
+        self.widget_list = []
+        self.pack()
+
+        for i in range(4):
+            if not ctrlpnl:
+                self.widget_list.append(widget(s_and_f, self))
+            else:
+                self.widget_list.append(widget(ctrlpnl, self))
+            self.widget_list[i].pack(side="left")
+
+
 
 def new_page_command():
     pnl.write("add_page")
@@ -56,7 +102,7 @@ def send_page_command():
 
 
 
-port = 'COM4'
+port = 'COM3'
 
 pnl = CtrlPnl(port)
 
@@ -191,6 +237,17 @@ while True:
             print(colours)
 
             pnl.write("update_color", json.dumps(colours).encode('UTF-8'))
+
+        elif command_string == "send_value":
+            script_len = int.from_bytes(data[0:4], byteorder=BYTE_ORDER)
+            script_name = data[4:script_len + 4].decode('UTF-8')
+
+            function_len = int.from_bytes(data[script_len + 4:script_len + 8], byteorder=BYTE_ORDER)
+            function_name = data[script_len + 8:script_len + 8 + script_len + 8].decode('UTF-8')
+
+            value = int.from_bytes(data[script_len + 4:script_len + 8], byteorder=BYTE_ORDER)
+
+            script_dictionary[script_name].dictionary()["dials"][function_name]["function"](value)
 
         elif command_string == "load_scripts":
             print(data)

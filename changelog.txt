@@ -1,3 +1,11 @@
+Version 1.0.5
+	- Device gui now starts maximised and buttons now stretch to fit screen
+	- send_value added to device and host code for dial support
+	- PanelRow and PanelNavigator classes removed, their contents added directly to CtrlPnlFrame class
+	- script 'dictionary' function's 'dial' element is not a dictionary, not a list
+	- Moved host and device specific code from ctrlnpl.py into host.py and device.py, respectively
+	- Added GPIO pins to pin array for all 8 buttons (allongside PiTFT screen)
+
 Version 1.0.4
     - Added support for hardware buttons using gpiozero
 
@@ -6,7 +14,6 @@ Version 1.0.3
     - Added previous and next page commands in device code, and corresponding buttons in host code
     - Functionality now added in host code to modify pages on device
     - Scripts must now expose static functions() and names() functions.
-
 
 Version 1.0.2
     - Add page navigation to device code

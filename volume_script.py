@@ -57,9 +57,19 @@ class Script:
                         "function": self.bass_down
                     }
                 },
-            "dials": []
+            "dials": {
+                "volume": {
+                    "label": "Volume",
+                    "function": self.volume
+                }
+            }
         }
 
+    def volume(self, volume):
+        # self.current_preamp_gain
+        index = int(volume / 65536 * self.preamp_gain_values.__len__())
+        self.current_preamp_gain = self.preamp_gain_values[index]
+        self.write()
 
 
     def get_color(self, pallette, ismuted, gain):

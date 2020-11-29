@@ -59,9 +59,8 @@ class Script:
                         "function": self.previous
                     },
                 },
-            "dials": []
+            "dials": {}
         }
-
     def pause(self):
         win32api.keybd_event(*self.pause_code)
 
