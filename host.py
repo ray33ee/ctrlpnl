@@ -5,7 +5,15 @@ import json
 import tkinter as tk
 import os
 from tkinter import ttk
+import pystray
 
+from PIL import Image, ImageDraw, ImageColor
+from pystray import MenuItem as item
+from pystray import Menu
+
+import threading
+
+from time import sleep
 
 class PanelCombos(tk.Frame):
     def __init__(self, scripts_and_functions, master=None):
@@ -188,8 +196,8 @@ class CtrlPnlHostFrame(tk.Frame):
             combo.scripts_and_functions = self.scripts_and_functions
         print(self.scripts_and_functions)
 
-    def load_combos(self):
-        page = json.loads(data.decode('UTF-8'))
+    def load_combos(self, dat):
+        page = json.loads(dat.decode('UTF-8'))
 
         index = 0
         self.page_name.delete(0, tk.END)
@@ -204,23 +212,7 @@ class CtrlPnlHostFrame(tk.Frame):
 
             index += 1
 
-
-port = 'COM3'
-
-pnl = CtrlPnlComs(port)
-
-script_dictionary = {}
-
-root = tk.Tk()
-
-app = CtrlPnlHostFrame(root)
-app.pack()
-
-app.load_names()
-
-while True:
-    app.update_idletasks()
-    app.update()
+def tick():
     if pnl.inBufferSize() != 0:
         response = pnl.read()
         command_string = COMMANDS[response["identifier"]]
@@ -228,9 +220,9 @@ while True:
 
         if command_string == "send_function":
             script_len = int.from_bytes(data[0:4], byteorder=BYTE_ORDER)
-            script_name = data[4:script_len+4].decode('UTF-8')
-            function_len = int.from_bytes(data[script_len+4:script_len+8], byteorder=BYTE_ORDER)
-            function_name = data[script_len+8:script_len+8 + script_len+8].decode('UTF-8')
+            script_name = data[4:script_len + 4].decode('UTF-8')
+            function_len = int.from_bytes(data[script_len + 4:script_len + 8], byteorder=BYTE_ORDER)
+            function_name = data[script_len + 8:script_len + 8 + function_len + 8].decode('UTF-8')
 
             print("Script :" + script_name)
             print("Function :" + function_name)
@@ -246,7 +238,7 @@ while True:
             script_name = data[4:script_len + 4].decode('UTF-8')
 
             function_len = int.from_bytes(data[script_len + 4:script_len + 8], byteorder=BYTE_ORDER)
-            function_name = data[script_len + 8:script_len + 8 + script_len + 8].decode('UTF-8')
+            function_name = data[script_len + 8:script_len + 8 + function_len + 8].decode('UTF-8')
 
             value = int.from_bytes(data[script_len + 4:script_len + 8], byteorder=BYTE_ORDER)
 
@@ -259,8 +251,8 @@ while True:
             ptr = 4
 
             for i in range(count):
-                length = int.from_bytes(data[ptr:ptr+4], byteorder=BYTE_ORDER)
-                script = data[ptr+4:ptr+length+4].decode('UTF-8')
+                length = int.from_bytes(data[ptr:ptr + 4], byteorder=BYTE_ORDER)
+                script = data[ptr + 4:ptr + length + 4].decode('UTF-8')
 
                 module = __import__(script)
                 # The following line is needed to ensure that the old instance is destroyed BEFORE the new instance is created
@@ -271,7 +263,101 @@ while True:
                 pnl.write("update_color", json.dumps(script_dictionary[script].colours).encode('UTF-8'))
 
                 print("Loaded: " + script)
-                ptr += 4+length
+                ptr += 4 + length
 
         elif command_string == "get_page":
-           app.load_combos()
+            # Since we cannot update the gui from worker threads, we test to see if we are running in the main thread.
+            # If we are not, we save the 'get_page' data until the application is taken out of the system tray
+            # and the GUI is reloaded.
+            if threading.current_thread() == threading.main_thread():
+                app.load_combos(data)
+            else:
+                global last_page
+                last_page = data
+
+def create_image(width=32, height=32, color1="red", color2="blue"):
+    # Generate an image and draw a pattern
+    image = Image.new('RGB', (width, height), color1)
+    dc = ImageDraw.Draw(image)
+    dc.rectangle(
+        (width // 2, 0, width, height // 2),
+        fill=color2)
+    dc.rectangle(
+        (0, height // 2, width // 2, height),
+        fill=color2)
+
+    return image
+
+root = tk.Tk()
+app = CtrlPnlHostFrame(root)
+thread = None
+stop_thread = False
+
+# If the device changes the page while the host program is in the system tray, save the page so we can load it when
+# host leaves system tray
+last_page = None
+
+
+def quit_window(icon):
+    icon.stop()
+    root.destroy()
+
+
+def show_window(icon):
+    global stop_thread
+    icon.stop()
+    root.after(0,root.deiconify)
+    stop_thread = True  # Stop worker thread so that GUI thread can take over
+    global last_page
+    if last_page:  # update current page if it has changed
+        app.load_combos(last_page)
+
+
+def withdraw_window():
+    root.withdraw()
+    image = create_image()
+    menu = Menu(item('Quit', quit_window), item('Show', show_window, default=True))
+    icon = pystray.Icon("name", image, "CtrlPnl", menu)
+    icon.run(dostuff)
+
+
+def dostuff(icon):
+    icon.visible = True
+
+    def ticks():
+        while True:
+            global stop_thread
+            if stop_thread:
+                stop_thread = False
+                break
+            tick()
+
+    thread = threading.Thread(target=ticks)
+    thread.start()
+
+
+port = 'COM3'
+
+pnl = CtrlPnlComs(port)
+
+script_dictionary = {}
+
+root.protocol("WM_DELETE_WINDOW", withdraw_window)
+
+app.pack()
+
+app.load_names()
+
+# Start the application in system tray
+withdraw_window()
+
+while True:
+    if root.children.__len__() != 0:  # if the root object hasn't been destroyed, update GUI and call tick
+        app.update_idletasks()
+        app.update()
+        tick()
+    else:  # If root object has been destroyed, stop worker thread and exit
+        stop_thread = True
+        break
+
+

@@ -71,7 +71,7 @@ class PanelButton(tk.Frame):
         self.function_name = ""
 
     def click(self):
-        if self.button["state"] == "normal":
+        if self.button["state"] != "disabled":
             self.send_function()
 
 
@@ -315,7 +315,7 @@ class CtrlPnlDeviceFrame(tk.Frame):
 # Make sure host and device do not send commands at the same time
 
 root = tk.Tk()
-#root.attributes('-fullscreen', True)
+root.attributes('-fullscreen', True)
 
 app = CtrlPnlDeviceFrame("/dev/ttyS0", "device_config.json", master=root)
 

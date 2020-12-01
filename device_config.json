@@ -103,18 +103,48 @@
             ]
         },
         {
-            "title": "",
+            "title": "1",
             "buttons": [
-                {
-                    "script": "multimedia_script",
-                    "function": "pause",
-                    "name": "Pause"
-                },
-                {
-                    "script": "volume_script",
-                    "function": "mute_bass",
-                    "name": "Mute Bass"
-                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+            ],
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        },
+        {
+            "title": "2",
+            "buttons": [
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+            ],
+            "dials": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        },
+        {
+            "title": "3",
+            "buttons": [
+                {},
+                {},
                 {},
                 {},
                 {},

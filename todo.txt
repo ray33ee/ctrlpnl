@@ -1,13 +1,31 @@
 
+Communication:
  - If the device fails to communicate with host, disable the GUI until communication starts/resumes
  - Think about who initiates communication, host or device. Take into account scenarios where host is loaded first then device,
    and visa versa.
  - Think about how the host decides which com port to use
- - Add comments to unclear code
+
+Code:
+ - Add comments
+    - to unclear code
+    - to all functions
  - Reorganise:
     - Remove PanelRow class, and use grid instead.
- - Figure out how to send host application to system tray on startup
  - Remove loops (such as those waiting for a response from serial port) from within main GUI loop
     - When waiting for response via serial, implement a timeout
+ - Cleanup absolutely disgusting system tray code. Add to its own class, or the CtrlPnlHostFrame class?
+
+Misc
  - Implement dial code. Only call dial functions when the dial value has changed enough (i.e. the difference between this value and the previous is greater than some value epsilon)
- - When the host code exits, send a signal for the device code to stop too
+ - When the host code exits, send a signal for the device code to stop too?
+ - Figure out how to start device.py on startup
+
+
+
+Installation requirments:
+    - Python3
+    - Pip, with all the required modules
+    - Enable Serial (but DISABLE serial console), I2C and SPI
+    - Instrall drivers for PiTFT 2.4'' screen
+    - Install circuitpi and modules for PCF8591 board
+    - Enable VNC

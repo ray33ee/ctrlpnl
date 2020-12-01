@@ -1,9 +1,14 @@
+Version 1.0.7
+	- Added support for pushing host GUI to system tray when closed
+	- Hardware buttons now work correctly when their software equivalent is in 'active' state
+	- We now exit the main loop properly if the root tkinter object has been destroyed to correctly exit the application on quitting
+
 Version 1.0.6
     - Host code now deletes old script instances BEFORE new ones are instantiated
     - volume_script now remembers settings on script startup/exit
     - Host GUI code is now encapsulated in CtrlPnlHostFrame
     - CtrlPnl and CtrlPnlFrame have been renamed to CtrlPnlComs and CtrlPnlDeviceFrame, respectively
-    - Adding and deleting pages will now upate on both host and device GUIs
+    - Adding and deleting pages will now update on both host and device GUIs
     - row1 and row2 are now displayed in the correct order in Host GUI
     - Buttons indicators will now only change colour if the script name matches as well as the function name
 
